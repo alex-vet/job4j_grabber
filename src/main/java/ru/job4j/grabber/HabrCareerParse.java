@@ -8,7 +8,6 @@ import org.jsoup.select.Elements;
 import ru.job4j.grabber.utils.DateTimeParser;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,25 +33,31 @@ public class HabrCareerParse implements Parse {
         }
     }
 
+    private Post parsePost(Element row) {
+        Element dateElement = row.child(0);
+        Element titleElement = row.select(".vacancy-card__title").first();
+        Element linkElement = titleElement.child(0);
+        String unparsedDate = dateElement.child(0).attr("datetime");
+        String vacancyName = titleElement.text();
+        String linkVacancy = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
+        String description = retrieveDescription(linkVacancy);
+        return new Post(vacancyName, linkVacancy, description, dateTimeParser.parse(unparsedDate));
+    }
+
     @Override
-    public List<Post> list(String link) throws IOException {
-        List<Post> post = new ArrayList<>();
+    public List<Post> list(String link) {
+        List<Post> posts = new ArrayList<>();
         for (int i = 1; i <= PAGE_COUNT; i++) {
             Connection connection = Jsoup.connect(String.format("%s%d", link, i));
-            Document document = connection.get();
+            Document document;
+            try {
+                document = connection.get();
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Parsing error");
+            }
             Elements rows = document.select(".vacancy-card__inner");
-            rows.forEach(row -> {
-                Element dateElement = row.child(0);
-                Element titleElement = row.select(".vacancy-card__title").first();
-                Element linkElement = titleElement.child(0);
-                String unparsedDate = dateElement.child(0).attr("datetime");
-                String vacancyName = titleElement.text();
-                String linkVacancy = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
-                String description = retrieveDescription(linkVacancy);
-                LocalDateTime dateTime = dateTimeParser.parse(unparsedDate);
-                post.add(new Post(vacancyName, linkVacancy, description, dateTime));
-            });
+            rows.forEach(row -> posts.add(parsePost(row)));
         }
-        return post;
+        return posts;
     }
 }
