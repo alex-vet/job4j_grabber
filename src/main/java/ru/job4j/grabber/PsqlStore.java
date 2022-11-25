@@ -32,8 +32,7 @@ public class PsqlStore implements Store {
     public void save(Post post) {
         try (PreparedStatement statement =
                      cnn.prepareStatement("insert into post(name, text, link, created) values (?, ?, ?, ?)"
-                                     + " ON CONFLICT (link) DO UPDATE SET name = EXCLUDED.name"
-                                     + " AND text = EXCLUDED.text AND created = EXCLUDED.created",
+                                     + " ON CONFLICT (link) DO nothing",
                              Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, post.getTitle());
             statement.setString(2, post.getDescription());

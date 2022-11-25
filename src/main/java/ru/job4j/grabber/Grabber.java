@@ -18,8 +18,8 @@ import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public class Grabber implements Grab {
-    private final Properties cfg = new Properties();
     private static final String HABR_LINK = "https://career.habr.com/vacancies/java_developer?page=";
+    private final Properties cfg = new Properties();
 
     public Store store() {
         return new PsqlStore(cfg);
