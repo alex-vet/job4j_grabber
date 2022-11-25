@@ -93,8 +93,8 @@ public class PsqlStore implements Store {
         return new Post(
                 result.getInt("id"),
                 result.getString("name"),
-                result.getString("text"),
                 result.getString("link"),
+                result.getString("text"),
                 result.getTimestamp("created").toLocalDateTime()
         );
     }
